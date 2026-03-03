@@ -66,7 +66,7 @@ DB_PORT=3306
 DB_NAME=${MYSQL_DATABASE}
 DB_USER=${MYSQL_USER}
 DB_PASSWORD=${MYSQL_PASSWORD}
-DATABASE_URL=${DATABASE_URL}
+DATABASE_URL="${DATABASE_URL}"
 BACKEND_PORT=3000
 
 # ── Frontend (Vite build-time) ────────────────────────────────────────────────
