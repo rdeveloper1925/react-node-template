@@ -25,7 +25,7 @@ prompt() {
 prompt_secret() {
   local label="$1" var
   read -rsp "$(echo -e "${YELLOW}${label}${NC}: ")" var
-  echo ""   # newline after hidden input
+  echo "" >/dev/tty   # newline after hidden input (to terminal, not captured by $())
   echo "$var"
 }
 
