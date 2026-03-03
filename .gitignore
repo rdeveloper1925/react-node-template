@@ -1,0 +1,19 @@
+# Environment — never commit real secrets
+.env
+.env.local
+
+# MySQL data volume
+/mysql/*
+!/mysql/.gitkeep
+
+# Node
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Vite build output
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db

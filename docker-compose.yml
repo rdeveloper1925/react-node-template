@@ -1,0 +1,60 @@
+services:
+
+  # ── Frontend ────────────────────────────────────────────────────────────────
+  # Nginx serves the built React/Vite bundle on port 81.
+  # It also reverse-proxies /api/* → backend:3000, so the browser sees a
+  # single origin and CORS is never triggered.
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_TITLE: ${VITE_APP_TITLE}
+    ports:
+      - "81:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ── Migrations ───────────────────────────────────────────────────────────────
+  # Runs drizzle migrations once after MySQL is healthy, then exits.
+  # The backend waits for this service to complete successfully before starting.
+  migrate:
+    build:
+      context: ./backend
+      target: migrate
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
+  # ── Backend ─────────────────────────────────────────────────────────────────
+  # Express API. No host port is published — only reachable via the Nginx proxy
+  # at /api, keeping the backend off the public network.
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── MySQL ────────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
